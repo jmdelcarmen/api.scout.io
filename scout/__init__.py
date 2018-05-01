@@ -1,6 +1,6 @@
 from flask import Flask
 from flask_jwt_extended import (JWTManager, jwt_required)
-from flask_sqlalchemy import Model, SQLAlchemy
+from flask_sqlalchemy import SQLAlchemy
 
 from scout.utils import compose_json_response
 from config import app_config
@@ -17,7 +17,15 @@ def create_app(config_name):
     JWTManager(app)
     db.init_app(app)
 
-    # User
+    # Auth
+    @app.route('/auth/signup', methods=['POST'])
+    def signup(*args, **kwargs):
+        return api.auth.signup(*args, **kwargs)
+
+    @app.route('/auth/login', methods=['POST'])
+    def login(*args, **kwargs):
+        return api.auth.login(*args, **kwargs)
+
     @app.route('/me', methods=['GET'])
     @jwt_required
     def get_me(*args, **kwargs):

@@ -7,7 +7,6 @@ from datetime import datetime
 from uuid import uuid4
 
 from scout import db
-from scout.utils import execute_with_default
 
 class OperationException(Exception):
     def __init__(self, *args, **kwargs):
@@ -54,9 +53,6 @@ class User(db.Model):
     phone_number = db.Column(db.String(15), unique=True)
     first_name = db.Column(db.String(45), nullable=False)
     last_name = db.Column(db.String(45), nullable=False)
-
-    # Trip History
-    trip_history = db.Column(MutableList.as_mutable(db.Integer), default=list) # use db.relationship(query_class=BaseQuery)
 
     # Metadata
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
@@ -142,8 +138,8 @@ class Trip(db.Model):
     # Primary
     id = db.Column(db.Integer, primary_key=True)
     uuid = db.Column(UUID(as_uuid=True), index=True, unique=True, default=uuid4, nullable=False)
-    users = db.relationship('User', lazy=True)
-    vendor = db.relationship('Vendor', lazy=True)
+    vendor_id = db.Column(db.Integer, db.ForeignKey('vendors.id'), nullable=False)
+    user_ids = db.Column(MutableList.as_mutable(ARRAY(db.Integer)), default=list)
 
     # Metadata
     created_at = db.Column(db.DateTime, default=datetime.utcnow)

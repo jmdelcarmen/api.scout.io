@@ -8,16 +8,17 @@ class Config:
 
 class TestingConfig(Config):
     DEBUG = True
-    SQLALCHEMY_DATABASE_URI = os.getenv('DB_URI_TEST') or super().SQLALCHEMY_DATABASE_URI
+    SQLALCHEMY_DATABASE_URI = os.getenv('DB_URI_TEST') or Config.SQLALCHEMY_DATABASE_URI
 
 class DevelopmentConfig(Config):
     DEBUG = True
-    SQLALCHEMY_DATABASE_URI = os.getenv('DB_URI_DEV') or super().SQLALCHEMY_DATABASE_URI
+    SQLALCHEMY_DATABASE_URI = os.getenv('DB_URI_DEV') or Config.SQLALCHEMY_DATABASE_URI
 
 class ProductionConfig(Config):
-    SQLALCHEMY_DATABASE_URI = os.getenv('DB_URI_PROD') or super().SQLALCHEMY_DATABASE_URI
+    SQLALCHEMY_DATABASE_URI = os.getenv('DB_URI_PROD') or Config.SQLALCHEMY_DATABASE_URI
 
 app_config = {
+    'local': Config,
     'testing': TestingConfig,
     'development': DevelopmentConfig,
     'production': ProductionConfig,
