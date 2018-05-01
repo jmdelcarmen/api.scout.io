@@ -2,25 +2,9 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="747de033-4d11-4076-a9f7-db4ca98630ff" name="Default" comment="">
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/.idea/api.scout.io.iml" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/.idea/dictionaries/jesusmarcodelcarmen.xml" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/.idea/inspectionProfiles/Project_Default.xml" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/.idea/misc.xml" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/.idea/modules.xml" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/.idea/vcs.xml" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/config.py" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/manage.py" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/requirements.txt" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/run.py" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/scout/__init__.py" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/scout/api/__init__.py" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/scout/api/auth.py" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/scout/api/users.py" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/scout/enums.py" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/scout/models.py" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/scout/utils.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.gitignore" afterPath="$PROJECT_DIR$/.gitignore" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/scout/enums.py" afterPath="$PROJECT_DIR$/scout/enums.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/scout/models.py" afterPath="$PROJECT_DIR$/scout/models.py" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="TRACKING_ENABLED" value="true" />
@@ -34,26 +18,25 @@
   </component>
   <component name="FileEditorManager">
     <leaf>
-      <file leaf-file-name="models.py" pinned="false" current-in-tab="true">
+      <file leaf-file-name="models.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/scout/models.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="450">
-              <caret line="151" column="0" lean-forward="true" selection-start-line="151" selection-start-column="0" selection-end-line="151" selection-end-column="0" />
+            <state relative-caret-position="120">
+              <caret line="8" column="20" lean-forward="false" selection-start-line="8" selection-start-column="20" selection-end-line="8" selection-end-column="20" />
               <folding>
-                <element signature="e#0#54#0" expanded="true" />
-                <element signature="e#480#575#0" expanded="false" />
-                <element signature="e#605#1338#0" expanded="false" />
-                <element signature="e#1366#4472#0" expanded="false" />
+                <element signature="e#438#533#0" expanded="false" />
+                <element signature="e#563#1296#0" expanded="false" />
+                <element signature="e#4458#5193#0" expanded="false" />
               </folding>
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="enums.py" pinned="false" current-in-tab="false">
+      <file leaf-file-name="enums.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/scout/enums.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="75">
-              <caret line="5" column="22" lean-forward="true" selection-start-line="5" selection-start-column="22" selection-end-line="5" selection-end-column="22" />
+            <state relative-caret-position="15">
+              <caret line="1" column="0" lean-forward="true" selection-start-line="1" selection-start-column="0" selection-end-line="1" selection-end-column="0" />
               <folding />
             </state>
           </provider>
@@ -85,12 +68,12 @@
         <option value="$PROJECT_DIR$/run.py" />
         <option value="$PROJECT_DIR$/manage.py" />
         <option value="$PROJECT_DIR$/scout/api/users.py" />
-        <option value="$PROJECT_DIR$/scout/enums.py" />
         <option value="$PROJECT_DIR$/.gitignore" />
         <option value="$PROJECT_DIR$/config.py" />
         <option value="$PROJECT_DIR$/.env" />
         <option value="$PROJECT_DIR$/scout/__init__.py" />
         <option value="$PROJECT_DIR$/scout/models.py" />
+        <option value="$PROJECT_DIR$/scout/enums.py" />
       </list>
     </option>
   </component>
@@ -253,7 +236,7 @@
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
-      <option name="time" value="7" />
+      <option name="time" value="8" />
     </breakpoint-manager>
     <watches-manager />
   </component>
@@ -323,14 +306,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/scout/enums.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="75">
-          <caret line="5" column="22" lean-forward="true" selection-start-line="5" selection-start-column="22" selection-end-line="5" selection-end-column="22" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/scout/utils.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="120">
@@ -377,14 +352,21 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/scout/models.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="450">
-          <caret line="151" column="0" lean-forward="true" selection-start-line="151" selection-start-column="0" selection-end-line="151" selection-end-column="0" />
+        <state relative-caret-position="120">
+          <caret line="8" column="20" lean-forward="false" selection-start-line="8" selection-start-column="20" selection-end-line="8" selection-end-column="20" />
           <folding>
-            <element signature="e#0#54#0" expanded="true" />
-            <element signature="e#480#575#0" expanded="false" />
-            <element signature="e#605#1338#0" expanded="false" />
-            <element signature="e#1366#4472#0" expanded="false" />
+            <element signature="e#438#533#0" expanded="false" />
+            <element signature="e#563#1296#0" expanded="false" />
+            <element signature="e#4458#5193#0" expanded="false" />
           </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/scout/enums.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="15">
+          <caret line="1" column="0" lean-forward="true" selection-start-line="1" selection-start-column="0" selection-end-line="1" selection-end-column="0" />
+          <folding />
         </state>
       </provider>
     </entry>

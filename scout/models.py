@@ -7,7 +7,6 @@ from datetime import datetime
 from uuid import uuid4
 
 from scout import db
-from scout.enums import PriceRanges, Days
 from scout.utils import execute_with_default
 
 class OperationException(Exception):
