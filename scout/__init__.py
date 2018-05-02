@@ -8,7 +8,8 @@ from config import app_config
 db = SQLAlchemy()
 
 # import models after db instantiation to avoid circular import
-from scout.models import OperationException, User
+from scout.models import OperationException, User, Visit
+from scout.lib import YelpFusion
 from scout import api
 
 def create_app(config_name):
@@ -36,5 +37,12 @@ def create_app(config_name):
     @jwt_required
     def create_trip(*args, **kwargs):
         return api.visit.create_trip(*args, **kwargs)
+
+
+    # Test
+    @app.route('/test', methods=['GET'])
+    def generate_fake_data(*args, **kwargs):
+        return api.test.generate_fake_data(*args, **kwargs)
+
 
     return app

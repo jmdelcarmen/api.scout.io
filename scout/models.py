@@ -1,13 +1,13 @@
 from flask_jwt_extended import get_jwt_identity
 from sqlalchemy.dialects.postgresql import UUID
-from sqlalchemy.orm import validates
+from sqlalchemy.orm import validates, load_only
 from werkzeug.security import generate_password_hash, check_password_hash
 from email_validator import validate_email, EmailNotValidError
 from datetime import datetime
 from uuid import uuid4
 
 from scout import db
-from scout.services import YelpFusion
+from scout.lib import Recommender
 
 class OperationException(Exception):
     def __init__(self, *args, **kwargs):
@@ -24,7 +24,7 @@ class User(db.Model):
 
     # Contact
     email = db.Column(db.String(128), index=True, unique=True, nullable=False)
-    phone_number = db.Column(db.String(15), unique=True)
+    phone_number = db.Column(db.String(15), nullable=False)
     first_name = db.Column(db.String(45), nullable=False)
     last_name = db.Column(db.String(45), nullable=False)
 
@@ -57,30 +57,30 @@ class User(db.Model):
         except:
             raise OperationException(self)
 
-    # Validators
-    @validates('username')
-    def validate_username(self, key, username):
-        if not username:
-            raise AssertionError('No username provided')
+    # # Validators
+    # @validates('username')
+    # def validate_username(self, key, username):
+    #     if not username:
+    #         raise AssertionError('No username provided')
+    #
+    #     if User.query.filter(User.username == username).first():
+    #         raise AssertionError('Username already taken')
+    #
+    #     return username
 
-        if User.query.filter(User.username == username).first():
-            raise AssertionError('Username already taken')
-
-        return username
-
-    @validates('email')
-    def validate_email(self, key, email):
-        if not email:
-            raise AssertionError('No email provided')
-        try:
-            validate_email(email)
-        except EmailNotValidError:
-            raise AssertionError('Invalid email format')
-
-        if User.query.filter(User.email == email).first():
-            raise AssertionError('Email already taken')
-
-        return email
+    # @validates('email')
+    # def validate_email(self, key, email):
+    #     if not email:
+    #         raise AssertionError('No email provided')
+    #     try:
+    #         validate_email(email)
+    #     except EmailNotValidError:
+    #         raise AssertionError('Invalid email format')
+    #
+    #     if User.query.filter(User.email == email).first():
+    #         raise AssertionError('Email already taken')
+    #
+    #     return email
 
     # Statics
     @staticmethod
@@ -106,6 +106,16 @@ class User(db.Model):
 
         return { 'valid': False, 'user': None }
 
+    @staticmethod
+    def batch_save(records):
+        try:
+            for record in records:
+                record.updated_at = datetime.utcnow()
+            db.session.bulk_save_objects(records)
+            db.session.commit()
+        except:
+            raise OperationException()
+
     # Private
     def _hash_password(self, password):
         return generate_password_hash(password)
@@ -116,8 +126,8 @@ class Visit(db.Model):
     # Primary
     id = db.Column(db.Integer, primary_key=True)
     uuid = db.Column(UUID(as_uuid=True), index=True, unique=True, default=uuid4, nullable=False)
-    yelp_id = db.Column(db.Strin(128), nullable=False)
-    user_id = db.Column((db.Integer), nullable=False)
+    yelp_id = db.Column(db.String(128), nullable=False)
+    user_id = db.Column(db.Integer, nullable=False)
     satisfaction = db.Column((db.Integer), nullable=False)
     attend_date =  db.Column(db.DateTime, nullable=False)
 
@@ -125,16 +135,18 @@ class Visit(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow)
 
-    def __init__(self, vendor_id, user_ids):
-        self.vendor_id = vendor_id
-        self.user_ids = user_ids
+    def __init__(self, yelp_id, user_id, satisfaction, attend_date, **kwargs):
+        self.yelp_id = yelp_id
+        self.user_id = user_id
+        self.satisfaction = satisfaction
+        self.attend_date = attend_date
 
     def __repr__(self):
         return str(self.to_json())
 
     def to_json(self):
         return {
-            'vendor_id': self.vendor_id,
+            'yelp_id': self.yelp_id,
             'user_id': self.user_id,
             'attend_date': self.attend_date,
             'satisfaction': self.satisfaction,
@@ -148,3 +160,20 @@ class Visit(db.Model):
         except:
             raise OperationException(self)
 
+    @staticmethod
+    def batch_save(records):
+        try:
+            for record in records:
+                record.updated_at = datetime.utcnow()
+            db.session.bulk_save_objects(records)
+            db.session.commit()
+        except:
+            raise OperationException(records)
+
+    @staticmethod
+    def get_recommendation(user_id, count = 5):
+        visit_history = Visit.query.options(load_only('user_id', 'yelp_id', 'satisfaction')).all()
+        formatted_visit_history = list(map(lambda visit: (visit.user_id, visit.yelp_id, visit.satisfaction), visit_history))
+
+        recommender = Recommender(formatted_visit_history)
+        return recommender.recommend_visit_with_user_id(user_id, count)
