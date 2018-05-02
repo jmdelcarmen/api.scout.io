@@ -31,4 +31,10 @@ def create_app(config_name):
     def get_me(*args, **kwargs):
         return api.users.get_me(*args, **kwargs)
 
+    # Trips
+    @app.route('/trips', methods=['POST'])
+    @jwt_required
+    def create_trip(*args, **kwargs):
+        return api.visit.create_trip(*args, **kwargs)
+
     return app

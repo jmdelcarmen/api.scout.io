@@ -1,5 +1,5 @@
-from sqlalchemy.dialects.postgresql import UUID, ARRAY
-from sqlalchemy.ext.mutable import MutableList
+from flask_jwt_extended import get_jwt_identity
+from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import validates
 from werkzeug.security import generate_password_hash, check_password_hash
 from email_validator import validate_email, EmailNotValidError
@@ -7,37 +7,11 @@ from datetime import datetime
 from uuid import uuid4
 
 from scout import db
+from scout.services import YelpFusion
 
 class OperationException(Exception):
     def __init__(self, *args, **kwargs):
         print('Unable to execute operation', args, kwargs)
-
-class Vendor(db.Model):
-    __tablename__ = 'vendors'
-
-    # Primary
-    id = db.Column(db.Integer, primary_key=True)
-    uuid = db.Column(UUID(as_uuid=True), index=True, unique=True, default=uuid4, nullable=False)
-    name = db.Column(db.String(128), nullable=False)
-    yelp_id = db.Column(db.String(255))
-
-    # Metadata
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    updated_at = db.Column(db.DateTime, default=datetime.utcnow)
-
-    def __repr__(self):
-        return str(self.to_json())
-
-    def to_json(self):
-        return {}
-
-    def save(self):
-        try:
-            self.updated_at = datetime.utcnow()
-            db.session.add(self)
-            db.session.commit()
-        except:
-            raise OperationException(self)
 
 class User(db.Model):
     __tablename__ = 'users'
@@ -118,6 +92,10 @@ class User(db.Model):
         return check_password_hash(hash, password)
 
     @staticmethod
+    def get_current():
+        return User.get_user_with_uuid(get_jwt_identity())
+
+    @staticmethod
     def validate_credentials(username_or_email, password, **kwargs):
 
         user = User.query.filter(User.username == username_or_email).first() or \
@@ -132,24 +110,35 @@ class User(db.Model):
     def _hash_password(self, password):
         return generate_password_hash(password)
 
-class Trip(db.Model):
-    __tablename__ = 'trips'
+class Visit(db.Model):
+    __tablename__ = 'visits'
 
     # Primary
     id = db.Column(db.Integer, primary_key=True)
     uuid = db.Column(UUID(as_uuid=True), index=True, unique=True, default=uuid4, nullable=False)
-    vendor_id = db.Column(db.Integer, db.ForeignKey('vendors.id'), nullable=False)
-    user_ids = db.Column(MutableList.as_mutable(ARRAY(db.Integer)), default=list)
+    yelp_id = db.Column(db.Strin(128), nullable=False)
+    user_id = db.Column((db.Integer), nullable=False)
+    satisfaction = db.Column((db.Integer), nullable=False)
+    attend_date =  db.Column(db.DateTime, nullable=False)
 
     # Metadata
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow)
 
+    def __init__(self, vendor_id, user_ids):
+        self.vendor_id = vendor_id
+        self.user_ids = user_ids
+
     def __repr__(self):
         return str(self.to_json())
 
     def to_json(self):
-        return {}
+        return {
+            'vendor_id': self.vendor_id,
+            'user_id': self.user_id,
+            'attend_date': self.attend_date,
+            'satisfaction': self.satisfaction,
+        }
 
     def save(self):
         try:
@@ -158,3 +147,4 @@ class Trip(db.Model):
             db.session.commit()
         except:
             raise OperationException(self)
+
