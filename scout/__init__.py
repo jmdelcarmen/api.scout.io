@@ -27,22 +27,34 @@ def create_app(config_name):
     def login(*args, **kwargs):
         return api.auth.login(*args, **kwargs)
 
-    @app.route('/me', methods=['GET'])
+    # Recommendations
+    @app.route('/recommendations', method=['GET'])
     @jwt_required
-    def get_me(*args, **kwargs):
-        return api.users.get_me(*args, **kwargs)
+    def get_recommendations(*args, **kwargs):
+        return api.users.get_recommendations(*args, **kwargs)
 
-    # Trips
-    @app.route('/trips', methods=['POST'])
+    # Visits
+    @app.route('/visits/<visit_uuid>', method=['GET'])
     @jwt_required
-    def create_trip(*args, **kwargs):
-        return api.visit.create_trip(*args, **kwargs)
+    def get_visit(visit_uuid = None, *args, **kwargs):
+        if visit_uuid:
+            return api.visits.get_visit_with_uuid(visit_uuid, *args, **kwargs)
+        return api.visits.get_visits(*args, **kwargs)
 
+    @app.route('/visits', method=['POST'])
+    @jwt_required
+    def create_visit(*args, **kwargs):
+        return api.visits.create_visit(*args, **kwargs)
+
+    # Search
+    @app.route('/search', method=['POST'])
+    @jwt_required
+    def search_businesses(*args, **kwargs):
+        return api.search.search_businesses(*args, **kwargs)
 
     # Test
     @app.route('/test', methods=['GET'])
     def generate_fake_data(*args, **kwargs):
         return api.test.generate_fake_data(*args, **kwargs)
-
 
     return app

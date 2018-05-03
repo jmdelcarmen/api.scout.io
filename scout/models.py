@@ -19,11 +19,11 @@ class User(db.Model):
     # Primary
     id = db.Column(db.Integer, primary_key = True)
     uuid = db.Column(UUID(as_uuid=True), index=True, unique=True, default=uuid4, nullable=False)
-    username = db.Column(db.String(45), unique=True, nullable=False)
+    username = db.Column(db.String(45), nullable=False)
     password = db.Column(db.String(128), nullable=False)
 
     # Contact
-    email = db.Column(db.String(128), index=True, unique=True, nullable=False)
+    email = db.Column(db.String(128), index=True, nullable=False)
     phone_number = db.Column(db.String(15), nullable=False)
     first_name = db.Column(db.String(45), nullable=False)
     last_name = db.Column(db.String(45), nullable=False)
@@ -57,30 +57,30 @@ class User(db.Model):
         except:
             raise OperationException(self)
 
-    # # Validators
-    # @validates('username')
-    # def validate_username(self, key, username):
-    #     if not username:
-    #         raise AssertionError('No username provided')
-    #
-    #     if User.query.filter(User.username == username).first():
-    #         raise AssertionError('Username already taken')
-    #
-    #     return username
+    # Validators
+    @validates('username')
+    def validate_username(self, key, username):
+        if not username:
+            raise AssertionError('No username provided')
 
-    # @validates('email')
-    # def validate_email(self, key, email):
-    #     if not email:
-    #         raise AssertionError('No email provided')
-    #     try:
-    #         validate_email(email)
-    #     except EmailNotValidError:
-    #         raise AssertionError('Invalid email format')
-    #
-    #     if User.query.filter(User.email == email).first():
-    #         raise AssertionError('Email already taken')
-    #
-    #     return email
+        if User.query.filter(User.username == username).first():
+            raise AssertionError('Username already taken')
+
+        return username
+
+    @validates('email')
+    def validate_email(self, key, email):
+        if not email:
+            raise AssertionError('No email provided')
+        try:
+            validate_email(email)
+        except EmailNotValidError:
+            raise AssertionError('Invalid email format')
+
+        if User.query.filter(User.email == email).first():
+            raise AssertionError('Email already taken')
+
+        return email
 
     # Statics
     @staticmethod
@@ -171,8 +171,19 @@ class Visit(db.Model):
             raise OperationException(records)
 
     @staticmethod
+    def get_visit_with_uuid(visit_uuid):
+        return Visit.query.filter(Visit.uuid == visit_uuid).first()
+
+    @staticmethod
+    def get_visits():
+        current_user = User.get_current()
+        return Visit.query.filter(Visit.user_id == current_user.id).all()
+
+    @staticmethod
     def get_recommendation(user_id, count = 5):
         visit_history = Visit.query.options(load_only('user_id', 'yelp_id', 'satisfaction')).all()
+
+        # Maps query to [('user_id', 'yelp_id', 'satisfaction)] format
         formatted_visit_history = list(map(lambda visit: (visit.user_id, visit.yelp_id, visit.satisfaction), visit_history))
 
         recommender = Recommender(formatted_visit_history)

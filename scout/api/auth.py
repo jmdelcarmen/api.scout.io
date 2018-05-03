@@ -7,19 +7,22 @@ from scout.utils import compose_json_response
 
 def login(*args, **kwargs):
     data = request.get_json()
-    username_or_email = data['username_or_email']
-    password = data['password']
 
-    if username_or_email and password:
-        auth_dict = User.validate_credentials(username_or_email, password)
-        if auth_dict['valid']:
-            token = create_access_token(identity=auth_dict['user'].to_json()['uuid'], expires_delta=timedelta(30))
-            response = compose_json_response(success=True, data=token, message=None, code=200)
+    try:
+        username_or_email = data['username_or_email']
+        password = data['password']
+
+        if username_or_email and password:
+            auth_dict = User.validate_credentials(username_or_email, password)
+            if auth_dict['valid']:
+                token = create_access_token(identity=auth_dict['user'].to_json()['uuid'], expires_delta=timedelta(90))
+                response = compose_json_response(success=True, data=token, message=None, code=200)
+            else:
+                response = compose_json_response(success=False, data=None, message='Unauthorized', code=401)
         else:
-            response = compose_json_response(success=False, data=None, message='Unauthorized', code=401)
-    else:
-        response = compose_json_response(success=False, data=None, message='Invalid auth credentials', code=400)
-
+            response = compose_json_response(success=False, data=None, message='Invalid auth credentials', code=400)
+    except KeyError:
+        response = compose_json_response(success=False, data=None, message=None, code=400)
     return response
 
 def signup(*args, **kwargs):
@@ -32,11 +35,11 @@ def signup(*args, **kwargs):
                         last_name=data['last_name'],
                         phone_number=data['phone_number'],
                         password=data['password'])
-        if new_user:
-            new_user.save()
+        new_user.save()
         token = create_access_token(identity=new_user.uuid, expires_delta=timedelta(30))
         response = compose_json_response(success=True, data=token, message=None, code=200)
-    except (AssertionError, OperationException, KeyError) as err:
+    except OperationException:
+        response = compose_json_response(success=False, data=None, message=None, code=500)
+    except KeyError:
         response = compose_json_response(success=False, data=None, message=None, code=400)
-
     return response
