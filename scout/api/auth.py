@@ -23,6 +23,8 @@ def login(*args, **kwargs):
             response = compose_json_response(success=False, data=None, message='Invalid auth credentials', code=400)
     except KeyError:
         response = compose_json_response(success=False, data=None, message=None, code=400)
+
+    print(response)
     return response
 
 def signup(*args, **kwargs):

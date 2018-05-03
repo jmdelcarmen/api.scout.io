@@ -28,26 +28,29 @@ def create_app(config_name):
         return api.auth.login(*args, **kwargs)
 
     # Recommendations
-    @app.route('/recommendations', method=['GET'])
+    @app.route('/recommendations', methods=['GET'])
     @jwt_required
     def get_recommendations(*args, **kwargs):
         return api.users.get_recommendations(*args, **kwargs)
 
     # Visits
-    @app.route('/visits/<visit_uuid>', method=['GET'])
+    @app.route('/visits', methods=['GET'])
     @jwt_required
-    def get_visit(visit_uuid = None, *args, **kwargs):
-        if visit_uuid:
-            return api.visits.get_visit_with_uuid(visit_uuid, *args, **kwargs)
+    def get_visits(*args, **kwargs):
         return api.visits.get_visits(*args, **kwargs)
 
-    @app.route('/visits', method=['POST'])
+    @app.route('/visits/<visit_uuid>', methods=['GET'])
+    @jwt_required
+    def get_visit(visit_uuid, *args, **kwargs):
+        return api.visits.get_visit_with_uuid(visit_uuid, *args, **kwargs)
+
+    @app.route('/visits', methods=['POST'])
     @jwt_required
     def create_visit(*args, **kwargs):
         return api.visits.create_visit(*args, **kwargs)
 
     # Search
-    @app.route('/search', method=['POST'])
+    @app.route('/search', methods=['POST'])
     @jwt_required
     def search_businesses(*args, **kwargs):
         return api.search.search_businesses(*args, **kwargs)

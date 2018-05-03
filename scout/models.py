@@ -45,8 +45,11 @@ class User(db.Model):
 
     def to_json(self):
         return {
+            'uuid': self.uuid,
             'email': self.email,
             'username': self.username,
+            'created_at': self.created_at,
+            'updated_at': self.updated_at,
         }
 
     def save(self):
@@ -100,7 +103,6 @@ class User(db.Model):
 
         user = User.query.filter(User.username == username_or_email).first() or \
                User.query.filter(User.email == username_or_email).first()
-
         if user and User.validate_password_hash(password, user.password):
             return { 'valid': True, 'user': user }
 
@@ -128,7 +130,7 @@ class Visit(db.Model):
     uuid = db.Column(UUID(as_uuid=True), index=True, unique=True, default=uuid4, nullable=False)
     yelp_id = db.Column(db.String(128), nullable=False)
     user_id = db.Column(db.Integer, nullable=False)
-    satisfaction = db.Column((db.Integer), nullable=False)
+    satisfaction = db.Column(db.Integer, nullable=False)
     attend_date =  db.Column(db.DateTime, nullable=False)
 
     # Metadata
@@ -146,10 +148,13 @@ class Visit(db.Model):
 
     def to_json(self):
         return {
+            'uuid': self.uuid,
             'yelp_id': self.yelp_id,
             'user_id': self.user_id,
             'attend_date': self.attend_date,
             'satisfaction': self.satisfaction,
+            'created_at': self.created_at,
+            'updated_at': self.updated_at,
         }
 
     def save(self):
@@ -182,7 +187,6 @@ class Visit(db.Model):
     @staticmethod
     def get_recommendation(user_id, count = 5):
         visit_history = Visit.query.options(load_only('user_id', 'yelp_id', 'satisfaction')).all()
-
         # Maps query to [('user_id', 'yelp_id', 'satisfaction)] format
         formatted_visit_history = list(map(lambda visit: (visit.user_id, visit.yelp_id, visit.satisfaction), visit_history))
 
