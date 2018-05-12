@@ -9,7 +9,7 @@ def get_me(*args, **kwargs):
 
 def get_recommendations(*args, **kwargs):
     current_user = User.get_current()
-    page_number = execute_with_default(int, 0)(request.args.get('page'))
+    page_number = execute_with_default(int, 1)(request.args.get('page'))
 
     try:
         recommendations = Visit.get_recommendation(current_user.id, 5 * page_number)

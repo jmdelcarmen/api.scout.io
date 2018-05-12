@@ -24,15 +24,15 @@ class User(db.Model):
 
     # Contact
     email = db.Column(db.String(128), index=True, nullable=False)
-    phone_number = db.Column(db.String(15), nullable=False)
-    first_name = db.Column(db.String(45), nullable=False)
-    last_name = db.Column(db.String(45), nullable=False)
+    phone_number = db.Column(db.String(15), nullable=True)
+    first_name = db.Column(db.String(45), nullable=True)
+    last_name = db.Column(db.String(45), nullable=True)
 
     # Metadata
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow)
 
-    def __init__(self, username, email, first_name, last_name, phone_number, password, **kwargs):
+    def __init__(self, username, email, password, first_name = None, last_name = None, phone_number = None, **kwargs):
         self.username = username
         self.email = email
         self.first_name = first_name
@@ -61,29 +61,29 @@ class User(db.Model):
             raise OperationException(self)
 
     # Validators
-    @validates('username')
-    def validate_username(self, key, username):
-        if not username:
-            raise AssertionError('No username provided')
-
-        if User.query.filter(User.username == username).first():
-            raise AssertionError('Username already taken')
-
-        return username
-
-    @validates('email')
-    def validate_email(self, key, email):
-        if not email:
-            raise AssertionError('No email provided')
-        try:
-            validate_email(email)
-        except EmailNotValidError:
-            raise AssertionError('Invalid email format')
-
-        if User.query.filter(User.email == email).first():
-            raise AssertionError('Email already taken')
-
-        return email
+    # @validates('username')
+    # def validate_username(self, key, username):
+    #     if not username:
+    #         raise AssertionError('No username provided')
+    #
+    #     if User.query.filter(User.username == username).first():
+    #         raise AssertionError('Username already taken')
+    #
+    #     return username
+    #
+    # @validates('email')
+    # def validate_email(self, key, email):
+    #     if not email:
+    #         raise AssertionError('No email provided')
+    #     try:
+    #         validate_email(email)
+    #     except EmailNotValidError:
+    #         raise AssertionError('Invalid email format')
+    #
+    #     if User.query.filter(User.email == email).first():
+    #         raise AssertionError('Email already taken')
+    #
+    #     return email
 
     # Statics
     @staticmethod

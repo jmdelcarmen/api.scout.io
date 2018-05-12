@@ -24,19 +24,13 @@ def login(*args, **kwargs):
     except KeyError:
         response = compose_json_response(success=False, data=None, message=None, code=400)
 
-    print(response)
     return response
 
 def signup(*args, **kwargs):
     data = request.get_json()
 
     try:
-        new_user = User(username=data['username'],
-                        email=data['email'],
-                        first_name=data['first_name'],
-                        last_name=data['last_name'],
-                        phone_number=data['phone_number'],
-                        password=data['password'])
+        new_user = User(username=data['username'], email=data['email'], password=data['password'])
         new_user.save()
         token = create_access_token(identity=new_user.uuid, expires_delta=timedelta(30))
         response = compose_json_response(success=True, data=token, message=None, code=200)

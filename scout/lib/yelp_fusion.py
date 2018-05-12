@@ -51,7 +51,6 @@ class YelpFusion:
             response = YelpFusion.request(YelpFusion.config['HOST'],
                                           YelpFusion.config['BUSINESS_PATH'] + id,
                                           YelpFusion.config['API_KEY'])
-
             return response
         except YelpFusionException:
             return None
