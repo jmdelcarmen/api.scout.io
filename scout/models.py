@@ -1,6 +1,7 @@
 from flask_jwt_extended import get_jwt_identity
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import validates, load_only
+from sqlalchemy import desc
 from werkzeug.security import generate_password_hash, check_password_hash
 from email_validator import validate_email, EmailNotValidError
 from datetime import datetime
@@ -8,6 +9,7 @@ from uuid import uuid4
 
 from scout import db
 from scout.lib import Recommender
+from scout.lib import YelpFusion
 
 class OperationException(Exception):
     def __init__(self, *args, **kwargs):
@@ -61,29 +63,29 @@ class User(db.Model):
             raise OperationException(self)
 
     # Validators
-    # @validates('username')
-    # def validate_username(self, key, username):
-    #     if not username:
-    #         raise AssertionError('No username provided')
-    #
-    #     if User.query.filter(User.username == username).first():
-    #         raise AssertionError('Username already taken')
-    #
-    #     return username
-    #
-    # @validates('email')
-    # def validate_email(self, key, email):
-    #     if not email:
-    #         raise AssertionError('No email provided')
-    #     try:
-    #         validate_email(email)
-    #     except EmailNotValidError:
-    #         raise AssertionError('Invalid email format')
-    #
-    #     if User.query.filter(User.email == email).first():
-    #         raise AssertionError('Email already taken')
-    #
-    #     return email
+    @validates('username')
+    def validate_username(self, key, username):
+        if not username:
+            raise AssertionError('No username provided')
+
+        if User.query.filter(User.username == username).first():
+            raise AssertionError('Username already taken')
+
+        return username
+
+    @validates('email')
+    def validate_email(self, key, email):
+        if not email:
+            raise AssertionError('No email provided')
+        try:
+            validate_email(email)
+        except EmailNotValidError:
+            raise AssertionError('Invalid email format')
+
+        if User.query.filter(User.email == email).first():
+            raise AssertionError('Email already taken')
+
+        return email
 
     # Statics
     @staticmethod
@@ -180,9 +182,9 @@ class Visit(db.Model):
         return Visit.query.filter(Visit.uuid == visit_uuid).first()
 
     @staticmethod
-    def get_visits():
+    def get_visits(page):
         current_user = User.get_current()
-        return Visit.query.filter(Visit.user_id == current_user.id).all()
+        return Visit.query.filter(Visit.user_id == current_user.id).order_by(desc("created_at")).paginate(page, 10, False).items
 
     @staticmethod
     def get_recommendation(user_id, count = 5):
@@ -192,3 +194,7 @@ class Visit(db.Model):
 
         recommender = Recommender(formatted_visit_history)
         return recommender.recommend_visit_with_user_id(user_id, count)
+
+    @staticmethod
+    def get_places_to_discover(current_coords):
+        return YelpFusion.discover(current_coords)

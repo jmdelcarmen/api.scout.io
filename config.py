@@ -1,7 +1,7 @@
 import os
 
 class Config:
-    DEBUG = False
+    DEBUG = True
     SECRET_KEY = os.getenv('JWT_SECRET')
     SQLALCHEMY_DATABASE_URI = os.getenv('DB_URI_LOCAL')
     SQLALCHEMY_TRACK_MODIFICATIONS = True

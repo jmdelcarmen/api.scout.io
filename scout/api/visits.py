@@ -1,6 +1,8 @@
 from flask import request
+
 from scout.models import OperationException, User, Visit
-from scout.utils import compose_json_response
+from scout.utils import compose_json_response, execute_with_default
+from scout.lib import YelpFusion
 
 def get_visit_with_uuid(visit_uuid, *args, **kwargs):
     visit = Visit.get_visit_with_uuid(visit_uuid)
@@ -10,10 +12,15 @@ def get_visit_with_uuid(visit_uuid, *args, **kwargs):
     return compose_json_response(success=False, data=None, message=None, code=404)
 
 def get_visits(*args, **kwargs):
-    visits = Visit.get_visits()
+    page_number = execute_with_default(int, 1)(request.args.get('page'))
+    visits = Visit.get_visits(page=page_number)
+
+    formatted_visits = [{**visit.to_json(),
+                         "data": YelpFusion.get_with_id(visit.yelp_id, desired_props=["id", "name"])
+                        } for visit in visits]
 
     if visits:
-        return compose_json_response(success=True, data=[visit.to_json() for visit in visits], message=None, code=200)
+        return compose_json_response(success=True, data=formatted_visits, message=None, code=200)
     return compose_json_response(success=False, data=None, message=None, code=404)
 
 def create_visit(*args, **kwargs):
@@ -24,6 +31,8 @@ def create_visit(*args, **kwargs):
         yelp_id = data['yelp_id']
         attend_date = data['attend_date']
         satisfaction = data['satisfaction']
+
+        print(data)
 
         new_visit = Visit(user_id=user_id,
                           yelp_id=yelp_id,

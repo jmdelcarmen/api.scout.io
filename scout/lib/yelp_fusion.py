@@ -1,6 +1,7 @@
 import os
 import requests
 from urllib.parse import quote
+from urllib import request
 
 class YelpFusionException(Exception):
     def __init__(self):
@@ -28,29 +29,40 @@ class YelpFusion:
             raise YelpFusionException()
 
     @staticmethod
-    def search(term, location, limit = 0):
+    def search(term = "", location = "", params = {}, limit = 10):
         url_params = {
             'term': term.replace(' ', '+'),
             'limit': limit or YelpFusion.config['SEARCH_LIMIT'],
             'location': location.replace(' ', '+'),
+            'sort_by': 'rating',
         }
+
+        if params:
+            url_params = params
 
         try:
             response = YelpFusion.request(YelpFusion.config['HOST'],
                                       YelpFusion.config['SEARCH_PATH'],
                                       YelpFusion.config['API_KEY'],
                                       url_params=url_params)
-
             return response['businesses'] if 'businesses' in response else []
         except YelpFusionException: # Handle any HTTP errors
             return None
 
     @staticmethod
-    def get_with_id(id):
+    def discover(current_coords):
+        return YelpFusion.search(params = {'term': '', 'limit': 10, 'sort_by': 'rating', 'open_now': True, **current_coords})
+
+
+    @staticmethod
+    def get_with_id(id, desired_props = []):
         try:
             response = YelpFusion.request(YelpFusion.config['HOST'],
                                           YelpFusion.config['BUSINESS_PATH'] + id,
                                           YelpFusion.config['API_KEY'])
+            if desired_props:
+                return {desired_prop: response[desired_prop] for desired_prop in desired_props }
+
             return response
         except YelpFusionException:
             return None

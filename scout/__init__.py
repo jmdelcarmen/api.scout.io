@@ -33,6 +33,11 @@ def create_app(config_name):
     def get_recommendations(*args, **kwargs):
         return api.users.get_recommendations(*args, **kwargs)
 
+    @app.route('/discover', methods=['GET'])
+    @jwt_required
+    def get_places_to_discover(*args, **kwargs):
+        return api.users.get_places_to_discover(*args, **kwargs)
+
     # Visits
     @app.route('/visits', methods=['GET'])
     @jwt_required
