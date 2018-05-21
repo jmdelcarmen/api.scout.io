@@ -1,6 +1,7 @@
 from flask import request
 from scout.utils import execute_with_default, compose_json_response
-from scout.models import User, Visit
+from scout.models import User, Visit, Recommendation
+from scout.lib import YelpFusion
 
 
 def get_me(*args, **kwargs):
@@ -9,10 +10,12 @@ def get_me(*args, **kwargs):
 
 def get_recommendations(*args, **kwargs):
     current_user = User.get_current()
-    page_number = execute_with_default(int, 1)(request.args.get('page'))
 
     try:
-        recommendations = Visit.get_recommendation(current_user.id, 5 * page_number)
+        recommendations = [YelpFusion.get_with_id(id=recommendation.yelp_id, desired_props = ["id", "name", "image_url", "is_closed", "location", "url", "price"])
+                           for recommendation in Recommendation.get_latest_5_with_user_id(current_user.id)]
+
+
         response = compose_json_response(success=True, data=recommendations, message=None, code=200)
     except:
         response = compose_json_response(success=False, data=None, message=None, code=500)

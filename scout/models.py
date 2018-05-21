@@ -4,22 +4,20 @@ from sqlalchemy.orm import validates, load_only
 from sqlalchemy import desc
 from werkzeug.security import generate_password_hash, check_password_hash
 from email_validator import validate_email, EmailNotValidError
-from datetime import datetime, timedelta
-from uuid import uuid4
-from functools import partial
-from multiprocessing import Process
 from scipy.sparse.linalg import svds
 import numpy as np
 import pandas as pd
 
+from datetime import datetime, timedelta
+from uuid import uuid4
 
 from scout import db
-from scout.lib import Recommender
 from scout.lib import YelpFusion
 
 class OperationException(Exception):
     def __init__(self, *args, **kwargs):
         print('Unable to execute operation', args, kwargs)
+
 
 class User(db.Model):
     __tablename__ = 'users'
@@ -130,6 +128,7 @@ class User(db.Model):
     def _hash_password(self, password):
         return generate_password_hash(password)
 
+
 class Visit(db.Model):
     __tablename__ = 'visits'
 
@@ -193,21 +192,14 @@ class Visit(db.Model):
         return Visit.query.filter(Visit.user_id == current_user.id).order_by(desc("created_at")).paginate(page, 10, False).items
 
     @staticmethod
-    def get_recommendation(user_id, count = 5):
-        visit_history = Visit.query.options(load_only('user_id', 'yelp_id', 'satisfaction')).all()
-        # Maps query to [('user_id', 'yelp_id', 'satisfaction)] format
-        formatted_visit_history = list(map(lambda visit: (visit.user_id, visit.yelp_id, visit.satisfaction), visit_history))
-
-        recommender = Recommender(formatted_visit_history)
-        return recommender.recommend_visit_with_user_id(user_id, count)
-
-    @staticmethod
     def get_places_to_discover(current_coords):
         return YelpFusion.discover(current_coords)
+
 
 class Recommendation(db.Model):
     __tablename__ = 'recommendations'
 
+    # Primary
     id = db.Column(db.Integer, primary_key=True, nullable=False)
     uuid = db.Column(UUID(as_uuid=True), index=True, unique=True, default=uuid4)
     user_id = db.Column(db.Integer, nullable=False)
@@ -252,7 +244,7 @@ class Recommendation(db.Model):
             raise OperationException(records)
 
     @staticmethod
-    def get_latest_with_user_id(user_id):
+    def get_latest_5_with_user_id(user_id):
         current_date = datetime.utcnow().date()
 
         return Recommendation.query.filter(

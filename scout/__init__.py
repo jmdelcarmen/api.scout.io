@@ -1,4 +1,4 @@
-from flask import Flask, request
+from flask import Flask
 from flask_jwt_extended import (JWTManager, jwt_required)
 from flask_sqlalchemy import SQLAlchemy
 
