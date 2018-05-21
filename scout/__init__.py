@@ -15,7 +15,7 @@ from scout import api
 def create_app(config_name):
     app = Flask(__name__)
     app.config.from_object(app_config[config_name])
-    JWTManager(app)
+    jwt = JWTManager(app)
     db.init_app(app)
 
     # Auth
@@ -26,6 +26,18 @@ def create_app(config_name):
     @app.route('/auth/login', methods=['POST'])
     def login(*args, **kwargs):
         return api.auth.login(*args, **kwargs)
+
+    @jwt.invalid_token_loader
+    def invalid_token_loader(msg):
+        return api.auth.invalid_token_loader(msg)
+
+    @jwt.unauthorized_loader
+    def unauthorized_loader(msg):
+        return api.auth.unauthorized_loader(msg)
+
+    @jwt.expired_token_loader
+    def expired_token_loader(msg):
+        return api.auth.expired_token_loader(msg)
 
     # Recommendations
     @app.route('/recommendations', methods=['GET'])
