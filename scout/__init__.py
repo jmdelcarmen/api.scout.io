@@ -55,7 +55,7 @@ def create_app(config_name):
         return api.visits.create_visit(*args, **kwargs)
 
     # Search
-    @app.route('/search', methods=['POST'])
+    @app.route('/search', methods=['GET'])
     @jwt_required
     def search_businesses(*args, **kwargs):
         return api.search.search_businesses(*args, **kwargs)

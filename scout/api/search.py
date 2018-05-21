@@ -4,11 +4,12 @@ from scout.lib.yelp_fusion import YelpFusion
 from scout.utils import compose_json_response
 
 def search_businesses(*args, **kwargs):
-    data = request.get_json()
+    params = request.args
 
     try:
-        q = data['q']
-        location = data['location']
+        q = params.get('q')
+        location = params.get('location')
+        print(q, location)
         businesses = YelpFusion.search(term=q, location=location)
 
         response = compose_json_response(success=True, data=businesses, message=None, code=200)
