@@ -55,7 +55,7 @@ class YelpFusion:
 
 
     @staticmethod
-    def get_with_id(id, desired_props = []):
+    def get_with_id(id, desired_props = [], **kwargs):
         try:
             response = YelpFusion.request(YelpFusion.config['HOST'],
                                           YelpFusion.config['BUSINESS_PATH'] + id,

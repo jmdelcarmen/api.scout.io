@@ -4,16 +4,20 @@ from sqlalchemy.orm import validates, load_only
 from sqlalchemy import desc
 from werkzeug.security import generate_password_hash, check_password_hash
 from email_validator import validate_email, EmailNotValidError
+from scipy.sparse.linalg import svds
+import numpy as np
+import pandas as pd
+
 from datetime import datetime, timedelta
 from uuid import uuid4
 
 from scout import db
-from scout.lib import Recommender
 from scout.lib import YelpFusion
 
 class OperationException(Exception):
     def __init__(self, *args, **kwargs):
         print('Unable to execute operation', args, kwargs)
+
 
 class User(db.Model):
     __tablename__ = 'users'
@@ -124,6 +128,7 @@ class User(db.Model):
     def _hash_password(self, password):
         return generate_password_hash(password)
 
+
 class Visit(db.Model):
     __tablename__ = 'visits'
 
@@ -187,23 +192,16 @@ class Visit(db.Model):
         return Visit.query.filter(Visit.user_id == current_user.id).order_by(desc("created_at")).paginate(page, 10, False).items
 
     @staticmethod
-    def get_recommendation(user_id, count = 5):
-        visit_history = Visit.query.options(load_only('user_id', 'yelp_id', 'satisfaction')).all()
-        # Maps query to [('user_id', 'yelp_id', 'satisfaction)] format
-        formatted_visit_history = list(map(lambda visit: (visit.user_id, visit.yelp_id, visit.satisfaction), visit_history))
-
-        recommender = Recommender(formatted_visit_history)
-        return recommender.recommend_visit_with_user_id(user_id, count)
-
-    @staticmethod
     def get_places_to_discover(current_coords):
         return YelpFusion.discover(current_coords)
+
 
 class Recommendation(db.Model):
     __tablename__ = 'recommendations'
 
+    # Primary
     id = db.Column(db.Integer, primary_key=True, nullable=False)
-    uuid = db.Column(UUID(as_uuid=True), index=True, unique=True, default=uuid4, nullable=False)
+    uuid = db.Column(UUID(as_uuid=True), index=True, unique=True, default=uuid4)
     user_id = db.Column(db.Integer, nullable=False)
     yelp_id = db.Column(db.String(128), nullable=False)
 
@@ -236,7 +234,7 @@ class Recommendation(db.Model):
             raise OperationException(self)
 
     @staticmethod
-    def batch_save(self, records):
+    def batch_save(records):
         try:
             for record in records:
                 record.updated_at = datetime.utcnow()
@@ -246,10 +244,51 @@ class Recommendation(db.Model):
             raise OperationException(records)
 
     @staticmethod
-    def get_latest_with_user_id(user_id):
+    def get_latest_5_with_user_id(user_id):
         current_date = datetime.utcnow().date()
 
         return Recommendation.query.filter(
             Recommendation.created_at.between(current_date, current_date + timedelta(days=1)),
             Recommendation.user_id == user_id,
         ).limit(5).all()
+
+    @staticmethod
+    def create_recommendations_for_today():
+        # Get complete visit history
+        visit_history = Visit.query.options(load_only('user_id', 'yelp_id', 'satisfaction')).all()
+        # Maps query to [('user_id', 'yelp_id', 'satisfaction)] format
+        formatted_visit_history = [(visit.user_id, visit.yelp_id, visit.satisfaction) for visit in visit_history]
+
+        # Initialize Dataframe
+        visit_history_df = pd.DataFrame(formatted_visit_history, columns=['user_id', 'yelp_id', 'satisfaction'])
+        R_df = pd.pivot_table(visit_history_df, index='user_id', columns='yelp_id', values='satisfaction').fillna(0)
+        R = R_df.as_matrix()
+        user_satisfactions_mean = np.mean(R, axis=1)
+        R_demeaned = R - user_satisfactions_mean.reshape(-1, 1)
+
+        U, sigma, Vt = svds(R_demeaned, k=3)
+        sigma = np.diag(sigma)
+        all_user_predicted_ratings = np.dot(np.dot(U, sigma), Vt) + user_satisfactions_mean.reshape(-1, 1)
+        predictions_df = pd.DataFrame(all_user_predicted_ratings, index=R_df.index.values, columns=R_df.columns)
+
+        def create_recommendations_with_user_id(user_id):
+            rated_by_user = np.array(visit_history_df[visit_history_df['user_id'] == user_id]['yelp_id'])
+            recommendations_per_day = 5
+
+            if len(rated_by_user) > 0:
+                predictions = predictions_df.loc[user_id].sort_values(ascending=False).index.values
+                yelp_ids = list(set(predictions) - set(rated_by_user))[:recommendations_per_day]
+
+                recommendations_for_today = [Recommendation(yelp_id=yelp_id, user_id=user_id) for yelp_id in yelp_ids]
+            else:
+                # TODO: recommend places near user with same category, location, high satisfaction
+                recommendations_for_today = []
+
+            return recommendations_for_today
+
+        all_recommendations = []
+        for user_id in visit_history_df['user_id']:
+            all_recommendations += create_recommendations_with_user_id(user_id)
+
+        Recommendation.batch_save(all_recommendations)
+
