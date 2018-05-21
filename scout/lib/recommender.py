@@ -18,15 +18,17 @@ class Recommender:
         all_user_predicted_ratings = np.dot(np.dot(U, sigma), Vt) + user_satisfactions_mean.reshape(-1, 1)
         self.predictions_df = pd.DataFrame(all_user_predicted_ratings, index=R_df.index.values, columns=R_df.columns)
 
-
     def recommend_visit_with_user_id(self, user_id, count = 5):
         rated_by_user = np.array(self.data[self.data['user_id'] == user_id]['yelp_id'])
         if len(rated_by_user) > 0:
             predictions = self.predictions_df.loc[user_id].sort_values(ascending=False).index.values
-            yelp_ids = list(set(predictions) - set(rated_by_user))[:count]
-            businesses = list(map(YelpFusion.get_with_id, yelp_ids))
 
-            return businesses
+            yelp_ids = list(set(predictions) - set(rated_by_user))[:count]
+            desired_props = ["name", "image_url", "is_closed", "location", "url", "price", "id"]
+
+            recommendations = [YelpFusion.get_with_id(id=yelp_id, desired_props=desired_props) for yelp_id in yelp_ids]
+
+            return recommendations
         else:
             # TODO: recommend places near user with same category, location, high satisfaction
             return []

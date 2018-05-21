@@ -4,7 +4,7 @@ from sqlalchemy.orm import validates, load_only
 from sqlalchemy import desc
 from werkzeug.security import generate_password_hash, check_password_hash
 from email_validator import validate_email, EmailNotValidError
-from datetime import datetime
+from datetime import datetime, timedelta
 from uuid import uuid4
 
 from scout import db
@@ -198,3 +198,58 @@ class Visit(db.Model):
     @staticmethod
     def get_places_to_discover(current_coords):
         return YelpFusion.discover(current_coords)
+
+class Recommendation(db.Model):
+    __tablename__ = 'recommendations'
+
+    id = db.Column(db.Integer, primary_key=True, nullable=False)
+    uuid = db.Column(UUID(as_uuid=True), index=True, unique=True, default=uuid4, nullable=False)
+    user_id = db.Column(db.Integer, nullable=False)
+    yelp_id = db.Column(db.String(128), nullable=False)
+
+    # Metadata
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    def __init__(self, user_id, yelp_id):
+        self.user_id = user_id
+        self.yelp_id = yelp_id
+
+    def __repr__(self):
+        return str(self.to_json())
+
+    def to_json(self):
+        return {
+            'uuid': self.uuid,
+            'user_id': self.user_id,
+            'yelp_id': self.yelp_id,
+            'created_at': self.created_at,
+            'updated_at': self.updated_at,
+        }
+
+    def save(self):
+        try:
+            self.updated_at = datetime.utcnow()
+            db.session.add(self)
+            db.session.commit()
+        except:
+            raise OperationException(self)
+
+    @staticmethod
+    def batch_save(self, records):
+        try:
+            for record in records:
+                record.updated_at = datetime.utcnow()
+            db.session.bulk_save_objects(records)
+            db.session.commit()
+        except:
+            raise OperationException(records)
+
+    @staticmethod
+    def get_latest_with_user_id(user_id):
+        current_date = datetime.utcnow().date()
+
+        return Recommendation.query.filter(
+            Recommendation.created_at.between(current_date, current_date + timedelta(days=1)),
+            Recommendation.user_id == user_id,
+        ).limit(5).all()

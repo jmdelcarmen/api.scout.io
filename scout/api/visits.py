@@ -15,9 +15,10 @@ def get_visits(*args, **kwargs):
     page_number = execute_with_default(int, 1)(request.args.get('page'))
     visits = Visit.get_visits(page=page_number)
 
-    formatted_visits = [{**visit.to_json(),
-                         "data": YelpFusion.get_with_id(visit.yelp_id, desired_props=["id", "name"])
-                        } for visit in visits]
+    formatted_visits = [{
+        **visit.to_json(),
+        "data": YelpFusion.get_with_id(visit.yelp_id, desired_props=["id", "name"])
+    } for visit in visits]
 
     if visits:
         return compose_json_response(success=True, data=formatted_visits, message=None, code=200)
