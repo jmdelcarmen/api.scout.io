@@ -50,9 +50,17 @@ class YelpFusion:
             return None
 
     @staticmethod
-    def discover(current_coords):
-        return YelpFusion.search(params = {'term': '', 'limit': 10, 'sort_by': 'rating', 'open_now': True, **current_coords})
+    def discover(current_coords, desired_props = [], **kwargs):
+        get_only_desired_props = lambda place: {desired_prop: place[desired_prop] for desired_prop in desired_props}
+        response = YelpFusion.search(params = {'term': '', 'limit': 10, 'sort_by': 'rating', 'open_now': True, **current_coords})
 
+        try:
+            if desired_props:
+                return list(map(get_only_desired_props, response))
+        except KeyError as e:
+            print("KeyError. Unfound desired_prop: {}".format(e))
+
+        return response
 
     @staticmethod
     def get_with_id(id, desired_props = [], **kwargs):

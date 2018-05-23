@@ -44,7 +44,7 @@ def invalid_token_loader(_):
     return compose_json_response(success=False, data=None, message="Invalid authorization header", code=401)
 
 def unauthorized_loader(_):
-    return compose_json_response(success=False, data=None, message="Missing authorization token header", code=401)
+    return compose_json_response(success=False, data=None, message="Missing authorization header", code=401)
 
 def expired_token_loader(_):
-    return compose_json_response(success=False, data=None, message="Expired authorization token", code=401)
+    return compose_json_response(success=False, data=None, message="Expired authorization header", code=401)

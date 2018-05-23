@@ -15,10 +15,10 @@ def get_visits(*args, **kwargs):
     page_number = execute_with_default(int, 1)(request.args.get('page'))
     visits = Visit.get_visits(page=page_number)
 
-    formatted_visits = [{
-        **visit.to_json(),
-        "data": YelpFusion.get_with_id(visit.yelp_id, desired_props=["id", "name"])
-    } for visit in visits]
+    def map_visit_to_formatted_json(visit):
+        return {**visit.to_json(), "data": YelpFusion.get_with_id(visit.yelp_id, desired_props=["id", "name"])}
+
+    formatted_visits = list(map(map_visit_to_formatted_json, visits))
 
     if visits:
         return compose_json_response(success=True, data=formatted_visits, message=None, code=200)
@@ -32,8 +32,6 @@ def create_visit(*args, **kwargs):
         yelp_id = data['yelp_id']
         attend_date = data['attend_date']
         satisfaction = data['satisfaction']
-
-        print(data)
 
         new_visit = Visit(user_id=user_id,
                           yelp_id=yelp_id,

@@ -54,8 +54,8 @@ class User(db.Model):
             'uuid': self.uuid,
             'email': self.email,
             'username': self.username,
-            'created_at': self.created_at,
-            'updated_at': self.updated_at,
+            'created_at': self.created_at.isoformat(),
+            'updated_at': self.updated_at.isoformat(),
         }
 
     def save(self):
@@ -158,10 +158,10 @@ class Visit(db.Model):
             'uuid': self.uuid,
             'yelp_id': self.yelp_id,
             'user_id': self.user_id,
-            'attend_date': self.attend_date,
+            'attend_date': self.attend_date.isoformat(),
             'satisfaction': self.satisfaction,
-            'created_at': self.created_at,
-            'updated_at': self.updated_at,
+            'created_at': self.created_at.isoformat(),
+            'updated_at': self.updated_at.isoformat(),
         }
 
     def save(self):
@@ -193,7 +193,7 @@ class Visit(db.Model):
 
     @staticmethod
     def get_places_to_discover(current_coords):
-        return YelpFusion.discover(current_coords)
+        return YelpFusion.discover(current_coords, desired_props=["name", "image_url", "is_closed", "location", "url", "id", "categories"])
 
 
 class Recommendation(db.Model):
@@ -221,8 +221,8 @@ class Recommendation(db.Model):
             'uuid': self.uuid,
             'user_id': self.user_id,
             'yelp_id': self.yelp_id,
-            'created_at': self.created_at,
-            'updated_at': self.updated_at,
+            'created_at': self.created_at.isoformat(),
+            'updated_at': self.updated_at.isoformat(),
         }
 
     def save(self):
@@ -290,5 +290,10 @@ class Recommendation(db.Model):
         for user_id in visit_history_df['user_id']:
             all_recommendations += create_recommendations_with_user_id(user_id)
 
-        Recommendation.batch_save(all_recommendations)
+        print("Starting batch save for {} recommendations.".format(len(all_recommendations)))
 
+        start = datetime.utcnow()
+        Recommendation.batch_save(all_recommendations)
+        end = datetime.utcnow()
+
+        print("Insert operation took {} seconds".format((end - start).seconds))
